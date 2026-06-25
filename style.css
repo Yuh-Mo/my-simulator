@@ -216,5 +216,24 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
         background: transparent !important;
         padding: 0 !important;
     }
+
+    /* 今回追加した sp-unwrap-group を指定した枠（input-group）をスマホで縦並びにする */
+    div.panel div.input-group.sp-unwrap-group {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        gap: 6px !important;
+    }
+
+    /* その中にある入力欄やボタンの塊（ctrl-wrapper や event-sub-ctrl）の横幅を100%に広げる */
+    div.panel div.input-group.sp-unwrap-group .ctrl-wrapper,
+    div.panel div.input-group.sp-unwrap-group .event-sub-ctrl {
+        width: 100% !important;
+        max-width: none !important;
+        flex-direction: row !important; /* ボタンと入力欄の横並び自体は維持 */
+    }
 }
 
