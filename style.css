@@ -177,18 +177,18 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
     /* ご要望：投資額変更・臨時支出・返済額変更・臨時の生活費・
               セカンドライフ収入・大暴落期間のインプット枠をスマホのみ縦並び（2行・3行化）に
     */
-    .event-row, 
-    .event-sub-ctrl {
+    div.panel div.event-row, 
+    div.panel div.event-sub-ctrl {
         flex-direction: column !important;
-        height: auto !important;          /* 固定高さを解除して潰れるのを防ぐ */
+        height: auto !important;          /* 固定高さを強制解除して潰れるのを防ぐ */
         border: none !important;          /* 外側の枠線を非表示にし各パーツを独立化 */
         overflow: visible !important;
         gap: 6px !important;
     }
 
     /* 縦並びになったボタンと数値入力欄のスタイル・幅調整 */
-    .event-sub-ctrl .step-btn,
-    .event-sub-ctrl input[type="number"] {
+    div.panel div.event-sub-ctrl .step-btn,
+    div.panel div.event-sub-ctrl input[type="number"] {
         height: 42px !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
@@ -196,7 +196,7 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
     }
 
     /* 臨時の生活費変化など、コントロール全体の親要素の横幅を100%に広げる */
-    .ctrl-wrapper {
+    div.panel .ctrl-wrapper {
         width: 100% !important;
         max-width: 100% !important;
     }
