@@ -210,25 +210,47 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
         gap: 6px !important;
     }
     
-    /* どんなに強い既存のルールがあっても最優先で強制縦並びにする設定 */
-    div.panel .sp-unwrap-group {
+/* ==========================================================================
+       sp-unwrap-group が指定された入力枠（期間指定など）のスマホ表示強制上書き
+       ========================================================================== */
+    
+    /* 既存の .input-group のがちがちなカード型スタイルを初期化し、縦積み専用に変える */
+    div.panel .input-group.sp-unwrap-group {
         display: flex !important;
-        flex-direction: column !important;
+        flex-direction: column !important; /* ラベルと入力欄を縦に並べる */
+        align-items: stretch !important;
         height: auto !important;
-        border: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-        gap: 8px !important;
+        min-height: auto !important;
+        gap: 6px !important;
     }
 
-    /* その中にある子要素の横幅の制限をすべて解除し、100%に広げて縦に並べる */
-    div.panel .sp-unwrap-group > *,
-    div.panel .sp-unwrap-group .ctrl-wrapper,
-    div.panel .sp-unwrap-group .event-sub-ctrl {
+    /* ラベル部分の幅制限を解除して100%に広げる */
+    div.panel .input-group.sp-unwrap-group .label-wrapper {
+        width: 100% !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    /* 調整ボタンや数値入力の塊（ctrl-wrapper や event-sub-ctrl）を完全に横幅いっぱいに広げる */
+    div.panel .input-group.sp-unwrap-group .ctrl-wrapper,
+    div.panel .input-group.sp-unwrap-group .event-sub-ctrl {
         width: 100% !important;
         max-width: none !important;
-        flex-direction: row !important; /* ボタンと入力欄の横並び自体は維持 */
+        display: flex !important;
+        flex-direction: row !important; /* ボタンと数値枠の「横並び自体」はキープ */
+        justify-content: space-between !important;
         gap: 4px !important;
+    }
+
+    /* 期間指定フォーム内のボタンと入力欄の横幅をすべて均等に引き伸ばして潰れを防ぐ */
+    div.panel .input-group.sp-unwrap-group .event-sub-ctrl .step-btn,
+    div.panel .input-group.sp-unwrap-group .event-sub-ctrl input[type="number"] {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 42px !important;
+        box-sizing: border-box !important;
     }
 }
 
