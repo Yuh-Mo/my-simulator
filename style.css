@@ -159,106 +159,76 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
 }
 
 /* ==========================================================================
-   スマホ版（画面幅768px以下）でのフォームはみ出し・レイアウト崩れの修正
+   【完全強制リセット】sp-unwrap-group 内の要素を確実にスマホ対応化する
    ========================================================================== */
 @media screen and (max-width: 768px) {
-    /* メイン画面とサブグリッドを1列に */
-    .grid, .sub-grid {
-        grid-template-columns: 1fr !important;
-    }
 
-    /* 標準インプットグループを縦並びに */
-    .input-group {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-    }
-
-    /* ご要望：投資額変更・臨時支出・返済額変更・臨時の生活費・
-              セカンドライフ収入・大暴落期間のインプット枠をスマホのみ縦並び（2行・3行化）に
-    */
-    div.panel div.event-row, 
-    div.panel div.event-sub-ctrl {
-        flex-direction: column !important;
-        height: auto !important;          /* 固定高さを強制解除して潰れるのを防ぐ */
-        border: none !important;          /* 外側の枠線を非表示にし各パーツを独立化 */
-        overflow: visible !important;
-        gap: 6px !important;
-    }
-
-    /* 縦並びになったボタンと数値入力欄のスタイル・幅調整 */
-    div.panel div.event-sub-ctrl .step-btn,
-    div.panel div.event-sub-ctrl input[type="number"] {
-        height: 42px !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-        width: 100% !important;
-    }
-
-    /* 臨時の生活費変化など、コントロール全体の親要素の横幅を100%に広げる */
-    div.panel .ctrl-wrapper {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    div.panel div.event-row, 
-    div.panel div.event-sub-ctrl {
-        flex-direction: column !important;
-        height: auto !important;          /* 固定高さを強制解除して潰れるのを防ぐ */
-        border: none !important;          /* 外側の枠線を非表示にし各パーツを独立化 */
-        overflow: visible !important;
-        gap: 6px !important;
-    }
-}
-
-/* ==========================================================================
-   【最優先上書き】sp-unwrap-group が付いた枠のスマホ表示崩れを完全に直す
-   ========================================================================== */
-@media (max-width: 768px) {
-
-    /* 1. 親の枠自体の横幅を100%にし、余計な制限を解除して縦積みにする */
-    body .container .grid .panel .input-group.sp-unwrap-group {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
+    /* 1. 親の枠を強制的に縦並びのブロックにし、既存の grid や flex を完全破壊 */
+    .sp-unwrap-group,
+    div.panel div.input-group.sp-unwrap-group,
+    div.panel div.event-row.sp-unwrap-group {
+        display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         height: auto !important;
         min-height: auto !important;
+        background: #fff !important;
+        padding: 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
         box-sizing: border-box !important;
+        margin-bottom: 14px !important;
     }
 
-    /* 2. ラベルの横幅制限（44%）を完全に解除して100%に広げる */
-    body .container .grid .panel .input-group.sp-unwrap-group .label-wrapper {
+    /* 2. ラベル部分（1行目）を横幅100%にして上部に独立配置 */
+    .sp-unwrap-group .label-wrapper,
+    .sp-unwrap-group .label-text {
+        display: flex !important;
         width: 100% !important;
         max-width: 100% !important;
-        flex-shrink: 0 !important;
-        display: flex !important;
+        flex-basis: auto !important;
         justify-content: space-between !important;
+        margin-bottom: 8px !important;
     }
 
-    /* 3. ボタンと数値の塊（56%制限）を解除し、強制的に100%幅で下に落とす */
-    body .container .grid .panel .input-group.sp-unwrap-group .ctrl-wrapper,
-    body .container .grid .panel .input-group.sp-unwrap-group .event-sub-ctrl {
+    /* 3. ボタンと数値入力欄が入っているコンテナ（2行目）の幅・制限を完全解除 */
+    .sp-unwrap-group .ctrl-wrapper,
+    .sp-unwrap-group .event-sub-ctrl,
+    .sp-unwrap-group > div:not(.label-wrapper) {
+        display: flex !important;
+        flex-direction: row !important; /* ボタンと入力欄の横並びは維持 */
         width: 100% !important;
         max-width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important; /* ボタンと数値枠の横並びは維持 */
+        min-width: 0 !important;
+        flex-basis: auto !important;
         justify-content: space-between !important;
-        margin-top: 6px !important;     /* ラベルとの間に隙間を作る */
+        gap: 4px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        height: 48px !important; /* タップしやすい高さ */
     }
 
-    /* 4. 数値入力欄（固定ピクセル）の幅制限を解除し、均等に広げる */
-    body .container .grid .panel .input-group.sp-unwrap-group input[type="number"] {
-        width: 20% !important;
-        height: 48px !important;
-        flex-grow: 1 !important;
+    /* 4. その中にあるすべてのボタン・入力欄を均等に横幅いっぱいに引き伸ばす */
+    .sp-unwrap-group button,
+    .sp-unwrap-group input[type="number"],
+    .sp-unwrap-group .step-btn {
+        flex: 1 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 48px !important; /* タップしやすい高さ */
+        font-size: 14px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
     }
-
-    /* 5. 調整ボタン（-10, -1, +1, +10）も横幅いっぱいに引き伸ばす */
-    body .container .grid .panel .input-group.sp-unwrap-group .step-btn {
-        height: 48px !important;
-        flex-grow: 1 !important;
+    
+    /* 数値入力欄のテキストを中央寄せに維持 */
+    .sp-unwrap-group input[type="number"] {
+        text-align: center !important;
+        font-weight: bold !important;
     }
 }
-
