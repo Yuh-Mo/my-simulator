@@ -157,7 +157,6 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
     .chart-container { height: 380px; padding: 6px; border-radius: 8px; background: #fff; }
     .notice { font-size: 12px; line-height: 1.4; padding: 0 5px; }
 }
-
 /* ==========================================================================
    【完全強制リセット】sp-unwrap-group 内の要素を確実にスマホ対応化する
    ========================================================================== */
