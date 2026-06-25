@@ -200,4 +200,21 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
         width: 100% !important;
         max-width: 100% !important;
     }
+
+    div.panel div.event-row, 
+    div.panel div.event-sub-ctrl {
+        flex-direction: column !important;
+        height: auto !important;          /* 固定高さを強制解除して潰れるのを防ぐ */
+        border: none !important;          /* 外側の枠線を非表示にし各パーツを独立化 */
+        overflow: visible !important;
+        gap: 6px !important;
+    }
+    
+    /* HTML側で sp-unwrap-group を指定した箇所の枠線をスマホ時のみ非表示にし、中身を縦並び化 */
+    .sp-unwrap-group {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
 }
+
