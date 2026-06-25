@@ -1,0 +1,159 @@
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 15px; }
+.container { max-width: 1650px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
+.subtitle { text-align: center; color: #7f8c8d; font-size: 13px; margin-bottom: 20px; }
+
+/* メインレイアウト */
+.grid { display: grid; grid-template-columns: 780px 1fr; gap: 20px; align-items: start; }
+.panel { background: #fafbfc; padding: 15px; border-radius: 8px; border: 1px solid #eef2f3; box-sizing: border-box; width: 100%; }
+.sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+.timeline-col { display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+.timeline-col.left-side { border-right: 1px dashed #e2e8f0; padding-right: 15px; }
+.col-header { font-size: 14px; font-weight: bold; color: #2c3e50; padding-bottom: 8px; border-bottom: 2px solid #cbd5e1; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+
+/* 右パネル：固定グラフ */
+.main-content { display: flex; flex-direction: column; gap: 20px; width: 100%; min-width: 0; position: sticky; top: 15px; }
+.chart-container { position: relative; width: 100%; height: 750px; background: #fafbfc; border: 1px solid #eef2f3; border-radius: 8px; padding: 10px; box-sizing: border-box; }
+
+/* グループコンテナ */
+.option-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 12px; margin-top: 5px; box-sizing: border-box; transition: max-height 0.25s ease-out, opacity 0.2s ease-out; max-height: 2000px; opacity: 1; overflow: visible; }
+.option-box.collapsed-group { max-height: 0 !important; opacity: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; margin-bottom: 0 !important; overflow: hidden !important; border: none !important; }
+
+/* ストレージ */
+.storage-box { background: #ebf5fb; padding: 10px; border-radius: 6px; border: 1px solid #d4e6f1; margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
+.storage-btn { flex: 1; padding: 10px 5px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; text-align: center; }
+.btn-save { background: #2980b9; color: white; }
+.btn-save:hover { background: #21618c; }
+.btn-load { background: #546e7a; color: white; }
+.btn-load:hover { background: #37474f; }
+#fileInput { display: none; }
+
+/* セクションタイトルスタイル */
+.section-title { font-size: 12px; font-weight: bold; color: #64748b; border-left: 3px solid #cbd5e1; padding-left: 8px; margin: 12px 0 6px 0; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+.section-title.active-group { border-left-color: #2980b9; color: #2c3e50; }
+.section-title input[type="checkbox"] { margin-left: auto; width: 16px; height: 16px; cursor: pointer; }
+
+/* 入力グループ（通常枠） */
+.input-group { margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; min-height: 35px; width: 100%; box-sizing: border-box; gap: 4px; }
+.label-wrapper { display: flex; align-items: center; gap: 4px; width: 44%; flex-shrink: 0; }
+.label-wrapper label { font-size: 11px; color: #4a5568; text-align: left; line-height: 1.3; font-weight: 500; }
+
+/* ヘルプアイコン */
+.help-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: #cbd5e1; color: white; border-radius: 50%; font-size: 9px; font-weight: bold; cursor: pointer; position: relative; user-select: none; flex-shrink: 0; }
+.help-icon:hover { background: #64748b; z-index: 9999; }
+.help-icon .tooltip { visibility: hidden; width: 230px; background-color: #1e293b; color: #f8fafc; text-align: left; padding: 8px; border-radius: 6px; position: absolute; z-index: 9999; opacity: 0; transition: opacity 0.15s; font-size: 10px; font-weight: normal; line-height: 1.4; box-shadow: 0 4px 12px rgba(0,0,0,0.3); pointer-events: none; white-space: normal; left: 18px; bottom: 5px; }
+.help-icon:hover .tooltip { visibility: visible; opacity: 1; }
+
+/* コントロールボタン・入力枠 */
+.ctrl-wrapper { display: flex; align-items: center; gap: 2px; width: 56%; justify-content: flex-end; flex-wrap: nowrap; }
+
+/* 金額系・年利などの4桁汎用枠 */
+.ctrl-wrapper input[type="number"].num-amt { width: 46px; height: 30px; padding: 0; border: 1px solid #ccd1d9; border-radius: 4px; text-align: center; font-size: 12px; font-weight: bold; box-sizing: border-box; background: #fff; -moz-appearance: textfield; margin: 0; flex-shrink: 0; }
+/* 年数系の2桁汎用枠 */
+.ctrl-wrapper input[type="number"].num-year { width: 36px; height: 30px; padding: 0; border: 1px solid #ccd1d9; border-radius: 4px; text-align: center; font-size: 12px; font-weight: bold; box-sizing: border-box; background: #fff; -moz-appearance: textfield; margin: 0; flex-shrink: 0; }
+
+.ctrl-wrapper input[type="number"]::-webkit-outer-spin-button,
+.ctrl-wrapper input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.step-btn { padding: 0; height: 30px; font-size: 10px; font-weight: normal; border: 1px solid #ccd1d9; background: #fff; color: #555; border-radius: 4px; cursor: pointer; min-width: 20px; display: flex; align-items: center; justify-content: center; user-select: none; box-sizing: border-box; margin: 0; flex-shrink: 0; }
+.step-btn:hover { background: #f0f4f8; border-color: #3498db; color: #3498db; }
+
+.step-btn.big { font-weight: bold; min-width: 25px; background: #f1f5f9; }
+.step-btn.plus { color: #2980b9 !important; border-color: #aed6f1 !important; background: #ebf5fb !important; }
+.step-btn.plus.big { background: #d4e6f1 !important; color: #1b4f72 !important; }
+.step-btn.minus { color: #c0392b !important; border-color: #f5b7b1 !important; background: #fdedec !important; }
+.step-btn.minus.big { background: #f5b7b1 !important; color: #78281f !important; }
+
+/* オプション子要素の折りたたみ */
+.collapsible-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.2s ease-out, opacity 0.15s ease-out; }
+.collapsible-content.show { max-height: 1500px; overflow: visible; opacity: 1; margin-top: 3px; }
+
+/* 一行フレックス構造 */
+.event-row { display: flex; align-items: center; justify-content: flex-start; gap: 4px; margin-bottom: 6px; background: #fff; padding: 5px; border-radius: 4px; border: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; height: 38px; overflow: hidden; }
+.event-row input[type="text"] { width: 100px; height: 28px; border: 1px solid #ccd1d9; border-radius: 4px; font-size: 11px; padding: 0 4px; box-sizing: border-box; flex-shrink: 1; min-width: 50px; }
+.event-row .label-text { font-size: 11px; font-weight: bold; color: #4a5568; white-space: nowrap; flex-shrink: 0; }
+.event-row .unit-text { font-size: 10px; color: #4a5568; white-space: nowrap; flex-shrink: 0; padding: 0 1px; display: inline-block; line-height: 28px; }
+
+/* 内部の数値コントロールブロック */
+.event-sub-ctrl { display: flex; align-items: center; gap: 0; background: #fff; flex-shrink: 0; height: 28px; box-sizing: border-box; }
+.event-sub-ctrl input[type="number"].num-year { width: 32px !important; height: 28px !important; font-size: 12px !important; text-align: center; border: 1px solid #ccd1d9 !important; border-left: none !important; border-right: none !important; box-sizing: border-box; font-weight: bold; -moz-appearance: textfield; margin: 0; padding: 0; background: #fff; }
+.event-sub-ctrl input[type="number"].num-amt { width: 44px !important; height: 28px !important; font-size: 12px !important; text-align: center; border: 1px solid #ccd1d9 !important; border-left: none !important; border-right: none !important; box-sizing: border-box; font-weight: bold; -moz-appearance: textfield; margin: 0; padding: 0; background: #fff; }
+.event-sub-ctrl input[type="number"].num-flex-cost { width: 34px !important; height: 28px !important; font-size: 12px !important; text-align: center; border: 1px solid #ccd1d9 !important; border-left: none !important; border-right: none !important; box-sizing: border-box; font-weight: bold; -moz-appearance: textfield; margin: 0; padding: 0; background: #fff; }
+
+.event-sub-ctrl input[type="number"]::-webkit-outer-spin-button,
+.event-sub-ctrl input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.event-sub-ctrl .step-btn { height: 28px !important; min-width: 18px !important; padding: 0 !important; margin: 0 !important; box-sizing: border-box; font-size: 9px; }
+.event-sub-ctrl .step-btn.big { min-width: 22px !important; }
+
+.notice { text-align: center; font-size: 11px; color: #95a5a6; margin-top: 12px; }
+
+@media (max-width: 1400px) {
+    .grid { grid-template-columns: 1fr; gap: 20px; }
+    .main-content { position: static; }
+    .chart-container { height: 550px; }
+}
+@media (max-width: 1024px) {
+    .sub-grid { grid-template-columns: 1fr; gap: 15px; }
+    .timeline-col.left-side { border-right: none; padding-right: 0; }
+}   
+
+/* 📱 モバイル端末（画面幅768px以下）での抜本的見栄え変更スタイル */
+@media (max-width: 768px) {
+    body { padding: 10px; background-color: #edf2f7; }
+    .container { padding: 14px; border-radius: 8px; box-shadow: none; }
+    h1 { font-size: 18px; line-height: 1.4; font-weight: bold; }
+    .subtitle { font-size: 12px; margin-bottom: 15px; }
+    
+    .col-header { font-size: 15px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 3px solid #cbd5e1; }
+    .section-title { font-size: 14px; padding: 8px 0 8px 10px; border-left: 4px solid #cbd5e1; margin: 18px 0 8px 0; }
+    .section-title input[type="checkbox"] { width: 22px; height: 22px; }
+
+    /* 入力グループ全体の高さを出し、上下に余裕を持たせる（縦積み・タップ最適化） */
+    .input-group { flex-direction: column; align-items: flex-start; min-height: auto; margin-bottom: 14px; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; gap: 8px; }
+    .label-wrapper { width: 100%; justify-content: space-between; align-items: center; }
+    .label-wrapper label { font-size: 13px; font-weight: bold; color: #2d3748; }
+    
+    /* モバイル専用の巨大ヘルプアイコン */
+    .help-icon { width: 20px; height: 20px; font-size: 12px; background: #a0aec0; }
+    .help-icon .tooltip { width: 260px; left: auto; right: -10px; bottom: 28px; font-size: 12px; padding: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+
+    /* コントロール（調整ボタン・数値）の全域拡張 */
+    .ctrl-wrapper { width: 100%; justify-content: space-between; gap: 4px; }
+    
+    /* 指の腹でミスなく確実に押せるサイズ（高さ48px基準）に拡大 */
+    .ctrl-wrapper input[type="number"].num-amt,
+    .ctrl-wrapper input[type="number"].num-year { width: 24%; height: 48px; font-size: 16px; border-radius: 6px; border-color: #a0aec0; }
+    .step-btn { height: 48px; min-width: 44px; font-size: 14px; border-radius: 6px; flex: 1; border-color: #cbd5e1; }
+    .step-btn.big { font-size: 14px; font-weight: bold; flex: 1.2; }
+
+    /* 設定参考値表示の拡大 */
+    .input-group style { border-top: none; margin-top: 0; padding-top: 0; }
+    #val_monthlySurplus { font-size: 16px; color: #2b6cb0; padding-right: 8px; }
+
+    /* 臨時の大きな支出・生活費変化行の【抜本的なカード型レイアウト化】 */
+    .event-row { flex-direction: column; height: auto; padding: 12px; gap: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fdfdfd; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .event-row input[type="text"] { width: 100%; height: 42px; font-size: 14px; padding: 0 10px; border-radius: 6px; }
+    .event-row .label-text { font-size: 13px; font-weight: bold; display: block; width: 100%; color: #4a5568; }
+    .event-row .unit-text { line-height: 42px; font-size: 13px; font-weight: bold; padding: 0 4px; color: #4a5568; }
+    
+    /* カード内部の調整コントロールを極大化 */
+    .event-sub-ctrl { width: 100%; height: 42px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; justify-content: space-between; }
+    .event-sub-ctrl .step-btn { height: 42px !important; min-width: 44px !important; font-size: 14px; border: none; background: #f7fafc; }
+    .event-sub-ctrl .step-btn:first-child { border-right: 1px solid #cbd5e1; }
+    .event-sub-ctrl .step-btn:last-child { border-left: 1px solid #cbd5e1; }
+    .event-sub-ctrl input[type="number"].num-year,
+    .event-sub-ctrl input[type="number"].num-amt,
+    .event-sub-ctrl input[type="number"].num-flex-cost { width: 100% !important; height: 42px !important; font-size: 15px !important; border: none !important; border-radius: 0 !important; }
+
+    /* カード内の要素配置用のコンテナラッパー */
+    .event-row { display: flex; flex-direction: column; align-items: stretch; }
+    .event-row > div:not(.help-icon):not(.event-sub-ctrl) { display: flex; align-items: center; width: 100%; gap: 6px; }
+
+    /* 保存・読込ボタンの押しやすさ向上 */
+    .storage-box { padding: 12px; gap: 12px; background: #e2e8f0; border-radius: 8px; }
+    .storage-btn { padding: 14px 10px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    /* グラフエリアの最適化（縦画面でも見やすく、スクロールを邪魔しない） */
+    .chart-container { height: 380px; padding: 6px; border-radius: 8px; background: #fff; }
+    .notice { font-size: 12px; line-height: 1.4; padding: 0 5px; }
+}

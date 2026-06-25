@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生涯の家計＆資産寿命シミュレーター【住宅ローン返済プラン比較版】</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>住宅ローン × 新NISA・投資 × 現金預金 【家計・資産寿命シミュレーター】</h1>
+    <div class="subtitle">〜「定年時にローンを丸ごと一括返済するプラン」と「定年後もそのまま分割返済を続けるプラン」の資産推移を同時に比較〜</div>
+    
+    <div class="grid">
+        <div class="panel" id="sidebarPanel">
+            <div class="storage-box">
+                <button class="storage-btn btn-save" onclick="exportToFile()">💾 設定を保存</button>
+                <button class="storage-btn btn-load" onclick="document.getElementById('fileInput').click()">📂 設定を読込</button>
+                <input type="file" id="fileInput" accept=".json" onchange="importFromFile(event)">
+            </div>
+
+            <div class="input-group" style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin-bottom: 14px; border-color: #cbd5e1;">
+                <div class="label-wrapper">
+                    <label style="font-weight: bold; color: #334155;">グラフの計算期間 (年間)</label>
+                    <div class="help-icon">？<span class="tooltip">シミュレーションを行う全体の年数です（初期値は40年間分）。</span></div>
+                </div>
+                <div class="ctrl-wrapper">
+                    <button class="step-btn minus" onclick="step('simYears', -1)">-1</button>
+                    <input type="number" id="simYears" class="num-year" value="40" oninput="updateChart()">
+                    <button class="step-btn plus" onclick="step('simYears', 1)">+1</button>
+                </div>
+            </div>
+
+            <div class="sub-grid">
+                <div class="timeline-col left-side">
+                    <div class="col-header">🏃‍♂️ 定年までの期間（家計・運用設定）</div>
+
+                    <div>
+                        <div class="section-title" id="title_groupActiveIncome">
+                            <span>💰 定年までの毎月の基本収支</span>
+                            <input type="checkbox" id="groupActiveIncome" checked onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupActiveIncome">
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>基本の毎月の手取り月収 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">毎月の基本給与の手取り額です。ボーナス分は除いて入力してください。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('monthlyIncome', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('monthlyIncome', -1)">-1</button>
+                                    <input type="number" id="monthlyIncome" class="num-amt" value="45" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('monthlyIncome', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('monthlyIncome', 10)">+10</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>その他の毎月の雑収入 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">太陽光発電の売電収入や副業など、毎月決まって入るその他のお金です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('solarIncome', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('solarIncome', -1)">-1</button>
+                                    <input type="number" id="solarIncome" class="num-amt" value="2" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('solarIncome', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('solarIncome', 10)">+10</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>年間のボーナス手取り総額 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">夏・冬などを合わせた、年間のボーナス手取り合計額です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('annualBonus', -100)">-100</button>
+                                    <button class="step-btn minus" onclick="step('annualBonus', -10)">-10</button>
+                                    <input type="number" id="annualBonus" class="num-amt" value="120" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('annualBonus', 10)">+10</button>
+                                    <button class="step-btn plus big" onclick="step('annualBonus', 100)">+100</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>毎月の基本生活費 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">【住宅ローンを除いた】、毎月の食費・光熱費・通信費・保険等の基本生活費です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('baseLivingCostActive', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('baseLivingCostActive', -1)">-1</button>
+                                    <input type="number" id="baseLivingCostActive" class="num-amt" value="25" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('baseLivingCostActive', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('baseLivingCostActive', 10)">+10</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>現在の現金・預金残高 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">シミュレーション開始時点（0年目）の、手元現金・銀行預金の総額です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('initCash', -100)">-100</button>
+                                    <button class="step-btn minus" onclick="step('initCash', -10)">-10</button>
+                                    <input type="number" id="initCash" class="num-amt" value="500" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('initCash', 10)">+10</button>
+                                    <button class="step-btn plus big" onclick="step('initCash', 100)">+100</button>
+                                </div>
+                            </div>
+                            <div class="input-group" style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 6px; min-height: 28px;">
+                                <div class="label-wrapper" style="width: 100%;">
+                                    <label style="font-weight: bold; color: #475569;">毎月の預貯金 (参考値)</label>
+                                    <div id="val_monthlySurplus">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" id="title_groupNisa">
+                            <span>📈 新NISA・資産運用の設定</span>
+                            <input type="checkbox" id="groupNisa" checked onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupNisa">
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>現在のNISA・投資残高 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">開始時点（0年目）の運用中資産の総額。1800万円の生涯投資枠の上限を考慮して元本計算されます。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('initAsset', -100)">-100</button>
+                                    <button class="step-btn minus" onclick="step('initAsset', -10)">-10</button>
+                                    <input type="number" id="initAsset" class="num-amt" value="300" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('initAsset', 10)">+10</button>
+                                    <button class="step-btn plus big" onclick="step('initAsset', 100)">+100</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>毎月の積立投資額 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年まで毎月、現金からNISA(投資信託)へ回す金額です。投資枠の上限（1800万）に達すると自動停止します。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('monthly積立', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('monthly積立', -1)">-1</button>
+                                    <input type="number" id="monthly積立" class="num-amt" value="10" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('monthly積立', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('monthly積立', 10)">+10</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>想定する運用年利（通常時）(%)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年を迎えるまでの期間における、投資信託などの平均年間利回り（リターン）です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('yieldRate', -1.0)">-1.0</button>
+                                    <button class="step-btn minus" onclick="step('yieldRate', -0.1)">-0.1</button>
+                                    <input type="number" id="yieldRate" class="num-amt" value="5.0" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('yieldRate', 0.1)">+0.1</button>
+                                    <button class="step-btn plus big" onclick="step('yieldRate', 1.0)">+1.0</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="border-top: 1px dashed #cbd5e1; margin-top: 8px; padding-top: 6px;">
+                                <div class="label-wrapper" style="width: 100%;">
+                                    <label style="font-weight: bold; color: #1b4f72; display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" id="enableGeometric" onchange="toggleSections()" style="width:20px; height:20px;"> 📊 複利リスクを考慮する（幾何平均）
+                                    </label>
+                                    <div class="help-icon">？<span class="tooltip">ONにすると、値動きの激しさ（ボラティリティ）によって長期複利の効果が目減りする現実的なリスクを自動的に差し引いて計算します。</span></div>
+                                </div>
+                            </div>
+                            <div id="fields_enableGeometric" class="collapsible-content">
+                                <div class="input-group">
+                                    <div class="label-wrapper"><label>値動きの激しさ（想定変動幅）(%)</label></div>
+                                    <div class="ctrl-wrapper">
+                                        <button class="step-btn minus big" onclick="step('volatility', -10)">-10</button>
+                                        <button class="step-btn minus" onclick="step('volatility', -1)">-1</button>
+                                        <input type="number" id="volatility" class="num-amt" value="20" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('volatility', 1)">+1</button>
+                                        <button class="step-btn plus big" onclick="step('volatility', 10)">+10</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group" style="border-top: 1px dashed #cbd5e1; margin-top: 6px; padding-top: 6px;">
+                                <div class="label-wrapper" style="width: 100%;">
+                                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" id="enableInvestEvent" onchange="toggleSections()" style="width:20px; height:20px;"> 🔗 途中で投資額を変更する
+                                    </label>
+                                    <div class="help-icon">？<span class="tooltip">「子どもの教育費がかかる一定期間だけ積立投資の金額を減らす」といった変化を反映させたい場合にチェックを入れます。</span></div>
+                                </div>
+                            </div>
+                            <div id="fields_enableInvestEvent" class="collapsible-content">
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 4px;">
+                                    <div class="label-wrapper" style="width: 100%;"><label>変更する期間（年目）</label></div>
+	                                    <div class="ctrl-wrapper" style="justify-content: flex-start; width: 100%;">
+                                        <button class="step-btn minus" onclick="step('investEventStart', -1)">-1</button>
+                                        <input type="number" id="investEventStart" class="num-year" value="6" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('investEventStart', 1)">+1</button>
+                                        <span class="unit-text" style="line-height:48px; padding:0 4px;">〜</span>
+                                        <button class="step-btn minus" onclick="step('investEventDuration', -1)">-1</button>
+                                        <input type="number" id="investEventDuration" class="num-year" value="15" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('investEventDuration', 1)">+1</button>
+                                        <span class="unit-text" style="line-height:48px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <div class="label-wrapper"><label>期間中の毎月の投資額 (万円)</label></div>
+                                    <div class="ctrl-wrapper">
+                                        <button class="step-btn minus big" onclick="step('investEventAmount', -10)">-10</button>
+                                        <button class="step-btn minus" onclick="step('investEventAmount', -1)">-1</button>
+                                        <input type="number" id="investEventAmount" class="num-amt" value="5" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('investEventAmount', 1)">+1</button>
+                                        <button class="step-btn plus big" onclick="step('investEventAmount', 10)">+10</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" id="title_groupLifeEvents">
+                            <span>🗓 臨時の大きな支出（イベント費・最大5件）</span>
+                            <input type="checkbox" id="groupLifeEvents" checked onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupLifeEvents" style="padding: 10px 15px;">
+                            <div id="lifeEventsContainer" style="display: flex; flex-direction: column; gap: 14px;">
+                                
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定1：</label>
+                                            <div class="help-icon">？<span class="tooltip">指定した年数のタイミングで差し引かれるまとまった費用です（車、教育費など）。</span></div>
+                                        </div>
+                                        <input type="text" id="evName1" value="子供教育費ピーク" placeholder="イベント名1" oninput="updateChart()" style="width: 180px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;">
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('evYear1', -1)">-1</button>
+                                            <input type="number" id="evYear1" class="num-year" value="8" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evYear1', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus big" onclick="step('evCost1', -100)">-100</button>
+                                            <button class="step-btn minus" onclick="step('evCost1', -10)">-10</button>
+                                            <input type="number" id="evCost1" class="num-amt" value="300" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evCost1', 10)">+10</button>
+                                            <button class="step-btn plus big" onclick="step('evCost1', 100)">+100</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定2：</label>
+                                            <div class="help-icon">？<span class="tooltip">イベント2の設定。名前を空欄にすると、グラフ上の文字ピン表示が非表示になります。</span></div>
+                                        </div>
+                                        <input type="text" id="evName2" value="外壁塗装・修繕" placeholder="イベント名2" oninput="updateChart()" style="width: 180px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;">
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('evYear2', -1)">-1</button>
+                                            <input type="number" id="evYear2" class="num-year" value="15" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evYear2', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus big" onclick="step('evCost2', -100)">-100</button>
+                                            <button class="step-btn minus" onclick="step('evCost2', -10)">-10</button>
+                                            <input type="number" id="evCost2" class="num-amt" value="150" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evCost2', 10)">+10</button>
+                                            <button class="step-btn plus big" onclick="step('evCost2', 100)">+100</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定3：</label>
+                                            <div class="help-icon">？<span class="tooltip">イベント3の設定。金額を0万にすれば、家計収支への影響は一切発生しません。</span></div>
+                                        </div>
+                                        <input type="text" id="evName3" value="周年記念旅行" placeholder="イベント名3" oninput="updateChart()" style="width: 180px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;">
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('evYear3', -1)">-1</button>
+                                            <input type="number" id="evYear3" class="num-year" value="20" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evYear3', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus big" onclick="step('evCost3', -100)">-100</button>
+                                            <button class="step-btn minus" onclick="step('evCost3', -10)">-10</button>
+                                            <input type="number" id="evCost3" class="num-amt" value="50" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evCost3', 10)">+10</button>
+                                            <button class="step-btn plus big" onclick="step('evCost3', 100)">+100</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定4：</label>
+                                            <div class="help-icon">？<span class="tooltip">イベント4の設定（初期はオフ）。</span></div>
+                                        </div>
+                                        <input type="text" id="evName4" value="" placeholder="イベント名4" oninput="updateChart()" style="width: 180px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;">
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('evYear4', -1)">-1</button>
+                                            <input type="number" id="evYear4" class="num-year" value="25" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evYear4', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus big" onclick="step('evCost4', -100)">-100</button>
+                                            <button class="step-btn minus" onclick="step('evCost4', -10)">-10</button>
+                                            <input type="number" id="evCost4" class="num-amt" value="0" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evCost4', 10)">+10</button>
+                                            <button class="step-btn plus big" onclick="step('evCost4', 100)">+100</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定5：</label>
+                                            <div class="help-icon">？<span class="tooltip">イベント5の設定（初期はオフ）。</span></div>
+                                        </div>
+                                        <input type="text" id="evName5" value="" placeholder="イベント名5" oninput="updateChart()" style="width: 180px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;">
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('evYear5', -1)">-1</button>
+                                            <input type="number" id="evYear5" class="num-year" value="30" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evYear5', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus big" onclick="step('evCost5', -100)">-100</button>
+                                            <button class="step-btn minus" onclick="step('evCost5', -10)">-10</button>
+                                            <input type="number" id="evCost5" class="num-amt" value="0" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('evCost5', 10)">+10</button>
+                                            <button class="step-btn plus big" onclick="step('evCost5', 100)">+100</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-col">
+                    <div class="col-header">🏡 住宅ローン返済プラン ＆ 老後の生活設定</div>
+
+                    <div>
+                        <div class="section-title" id="title_groupLoan">
+                            <span>🏠 住宅ローンの基本情報</span>
+                            <input type="checkbox" id="groupLoan" checked onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupLoan">
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>住宅ローンの金利 (年利) (%)</label>
+                                    <div class="help-icon">？<span class="tooltip">ローンの年間適用金利です。0.01%単位で微調整が可能です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('loanRate', -0.1)">-0.1</button>
+                                    <button class="step-btn minus" onclick="step('loanRate', -0.01)">-0.01</button>
+                                    <input type="number" id="loanRate" class="num-amt" value="1.0" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('loanRate', 0.01)">+0.01</button>
+                                    <button class="step-btn plus big" onclick="step('loanRate', 0.1)">+0.1</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>定年時点での残りのローン残高 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年退職を迎える年に、一括返済の対象となるローン残債のベース金額です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('loanRetireBalance', -100)">-100</button>
+                                    <button class="step-btn minus" onclick="step('loanRetireBalance', -10)">-10</button>
+                                    <input type="number" id="loanRetireBalance" class="num-amt" value="1200" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('loanRetireBalance', 10)">+10</button>
+                                    <button class="step-btn plus big" onclick="step('loanRetireBalance', 100)">+100</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>現在の毎月の返済額 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">現在の標準的な住宅ローンの月々返済額です。0.1万円単位で調整できます。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('monthlyLoan', -1.0)">-1.0</button>
+                                    <button class="step-btn minus" onclick="step('monthlyLoan', -0.1)">-0.1</button>
+                                    <input type="number" id="monthlyLoan" class="num-amt" value="12.0" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('monthlyLoan', 0.1)">+0.1</button>
+                                    <button class="step-btn plus big" onclick="step('monthlyLoan', 1.0)">+1.0</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>最終的なローン完済のタイミング (年目)</label>
+                                    <div class="help-icon">？<span class="tooltip">プランB（分割継続）を選んだ場合に、ローンが最終的に完済する年です（例:30年目で完済）。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus" onclick="step('loanEndYear', -1)">-1</button>
+                                    <input type="number" id="loanEndYear" class="num-year" value="30" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('loanEndYear', 1)">+1</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="border-top: 1px dashed #cbd5e1; margin-top: 8px; padding-top: 6px;">
+                                <div class="label-wrapper" style="width: 100%;">
+                                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" id="enableLoanChange" onchange="toggleSections()" style="width:20px; height:20px;"> 🔗 途中で返済額が変わる
+                                    </label>
+                                    <div class="help-icon">？<span class="tooltip">「当初の一定期間だけ金利プランの関係で返済額が異なる」ケースなどを再現。</span></div>
+                                </div>
+                            </div>
+                            <div id="fields_enableLoanChange" class="collapsible-content">
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 4px;">
+                                    <div class="label-wrapper" style="width: 100%;"><label>変更する期間（年目）</label></div>
+                                    <div class="ctrl-wrapper" style="justify-content: flex-start; width: 100%;">
+                                        <button class="step-btn minus" onclick="step('loanChangeStart', -1)">-1</button>
+                                        <input type="number" id="loanChangeStart" class="num-year" value="4" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('loanChangeStart', 1)">+1</button>
+                                        <span class="unit-text" style="line-height:48px; padding:0 4px;">〜</span>
+                                        <button class="step-btn minus" onclick="step('loanChangeEnd', -1)">-1</button>
+                                        <input type="number" id="loanChangeEnd" class="num-year" value="27" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('loanChangeEnd', 1)">+1</button>
+                                        <span class="unit-text" style="line-height:48px; padding-left:4px; font-size: 10px;">年目</span>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <div class="label-wrapper"><label>期間中の毎月の返済額 (万円)</label></div>
+                                    <div class="ctrl-wrapper">
+                                        <button class="step-btn minus big" onclick="step('loanChangeAmount', -1.0)">-1.0</button>
+                                        <button class="step-btn minus" onclick="step('loanChangeAmount', -0.1)">-0.1</button>
+                                        <input type="number" id="loanChangeAmount" class="num-amt" value="12.0" oninput="updateChart()">
+                                        <button class="step-btn plus" onclick="step('loanChangeAmount', 0.1)">+0.1</button>
+                                        <button class="step-btn plus big" onclick="step('loanChangeAmount', 1.0)">+1.0</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" id="title_groupFlexCost">
+                            <span>💸 臨時の生活費変化（子育て期の増減など）</span>
+                            <input type="checkbox" id="groupFlexCost" onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupFlexCost" style="padding: 10px 15px;">
+                            <div id="flexCostContainer" style="display: flex; flex-direction: column; gap: 14px;">
+                                
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定1：</label>
+                                            <div class="help-icon">？<span class="tooltip">指定の期間中、基本生活費を自動的にマイナス（またはプラス）する設定です。</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 20px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('flexStart1', -1)">-1</button>
+                                            <input type="number" id="flexStart1" class="num-year" value="6" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('flexStart1', 1)">+1</button>
+                                            
+                                            <span class="unit-text" style="line-height:30px; padding: 0 6px;">〜</span>
+                                            
+                                            <button class="step-btn minus" onclick="step('flexEnd1', -1)">-1</button>
+                                            <input type="number" id="flexEnd1" class="num-year" value="10" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('flexEnd1', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('flexCost1', -1)">-1</button>
+                                            <input type="number" id="flexCost1" class="num-amt" value="0" oninput="updateChart()" style="width: 24%">
+                                            <button class="step-btn plus" onclick="step('flexCost1', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円/月</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 6px;">
+                                    <div style="display: flex; align-items: center; width: 100%;">
+                                        <div class="label-wrapper" style="width: auto; min-width: 70px;">
+                                            <label>設定2：</label>
+                                            <div class="help-icon">？<span class="tooltip">設定の2つ目です。人生の時期に応じた生活費の波をより細かく再現できます。</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="ctrl-wrapper" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 20px; padding-left: 4px;">
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('flexStart2', -1)">-1</button>
+                                            <input type="number" id="flexStart2" class="num-year" value="11" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('flexStart2', 1)">+1</button>
+                                            
+                                            <span class="unit-text" style="line-height:30px; padding: 0 6px;">〜</span>
+                                            
+                                            <button class="step-btn minus" onclick="step('flexEnd2', -1)">-1</button>
+                                            <input type="number" id="flexEnd2" class="num-year" value="16" oninput="updateChart()">
+                                            <button class="step-btn plus" onclick="step('flexEnd2', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <button class="step-btn minus" onclick="step('flexCost2', -1)">-1</button>
+                                            <input type="number" id="flexCost2" class="num-amt" value="0" oninput="updateChart()" style="width: 24%">
+                                            <button class="step-btn plus" onclick="step('flexCost2', 1)">+1</button>
+                                            <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">万円/月</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" id="title_groupRetire">
+                            <span>👴 老後・退職後のセカンドライフ設定</span>
+                            <input type="checkbox" id="groupRetire" checked onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupRetire">
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>定年退職を迎えるタイミング (年目)</label>
+                                    <div class="help-icon">？<span class="tooltip">現役の仕事を退職する年です。この翌年からこれまでの給与が途絶え、老後モードに切り替わります。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus" onclick="step('retireYear', -1)">-1</button>
+                                    <input type="number" id="retireYear" class="num-year" value="20" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('retireYear', 1)">+1</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>退職金（一時金）(万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年を迎えた年（翌年の最初）に、現金口座に一括でプラスされる退職金の総額です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('retirementPay', -100)">-100</button>
+                                    <button class="step-btn minus" onclick="step('retirementPay', -10)">-10</button>
+                                    <input type="number" id="retirementPay" class="num-amt" value="1000" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('retirementPay', 10)">+10</button>
+                                    <button class="step-btn plus big" onclick="step('retirementPay', 100)">+100</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>老後の毎月の基本生活費 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年退職した後の毎月の基本生活費です。ここにも住宅ローン返済額は含めずに入力してください。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('livingCostOld', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('livingCostOld', -1)">-1</button>
+                                    <input type="number" id="livingCostOld" class="num-amt" value="22" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('livingCostOld', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('livingCostOld', 10)">+10</button>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group" style="border-top: 1px dashed #cbd5e1; margin-top: 8px; padding-top: 6px;">
+                                <div class="label-wrapper">
+                                    <label>老後の再雇用・働く収入 (万円/月)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年退職をした後に、再雇用契約やパート、副業などで得られる臨時の毎月の手取り収入です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('postRetireIncome', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('postRetireIncome', -1)">-1</button>
+                                    <input type="number" id="postRetireIncome" class="num-amt" value="10" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('postRetireIncome', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('postRetireIncome', 10)">+10</button>
+                                </div>
+                            </div>
+                            <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 4px;">
+                                <div class="label-wrapper" style="width: 100%;">
+                                    <label>その収入を得る期間（年目）</label>
+                                    <div class="help-icon">？<span class="tooltip">再雇用などによるお給料が発生する「開始年目」と「終了年目」を指定します。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper" style="justify-content: flex-start; width: 100%;">
+                                    <button class="step-btn minus" onclick="step('postRetireStart', -1)">-1</button>
+                                    <input type="number" id="postRetireStart" class="num-year" value="21" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('postRetireStart', 1)">+1</button>
+                                    <span class="unit-text" style="line-height:48px; padding:0 4px;">〜</span>
+                                    <button class="step-btn minus" onclick="step('postRetireEnd', -1)">-1</button>
+                                    <input type="number" id="postRetireEnd" class="num-year" value="25" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('postRetireEnd', 1)">+1</button>
+                                    <span class="unit-text" style="line-height:48px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="border-top: 1px dashed #cbd5e1; padding-top: 6px;">
+                                <div class="label-wrapper">
+                                    <label>老後の運用想定年利 (取り崩し期) (%)</label>
+                                    <div class="help-icon">？<span class="tooltip">定年退職した後の、NISA（投資信託）資産を取り崩しながら運用を続ける期間の想定年利です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('retireYieldRate', -1.0)">-1.0</button>
+                                    <button class="step-btn minus" onclick="step('retireYieldRate', -0.1)">-0.1</button>
+                                    <input type="number" id="retireYieldRate" class="num-amt" value="3.0" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('retireYieldRate', 0.1)">+0.1</button>
+                                    <button class="step-btn plus big" onclick="step('retireYieldRate', 1.0)">+1.0</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>年間の受給が始まるタイミング (年目)</label>
+                                    <div class="help-icon">？<span class="tooltip">公的年金の受け取りがスタートする年数です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus" onclick="step('pensionStartYear', -1)">-1</button>
+                                    <input type="number" id="pensionStartYear" class="num-year" value="25" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('pensionStartYear', 1)">+1</button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>受け取る毎月の年金見込額 (万円)</label>
+                                    <div class="help-icon">？<span class="tooltip">年金受給開始以降に、毎月加算される世帯合計の年金手取り（見込み）額です。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('pensionMonthly', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('pensionMonthly', -1)">-1</button>
+                                    <input type="number" id="pensionMonthly" class="num-amt" value="22" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('pensionMonthly', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('pensionMonthly', 10)">+10</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" id="title_groupMarketEvent">
+                            <span>💥 大暴落（〇〇ショック）の想定テスト設定</span>
+                            <input type="checkbox" id="groupMarketEvent" onchange="toggleSections()">
+                        </div>
+                        <div class="option-box" id="box_groupMarketEvent">
+                            <div class="input-group" style="flex-direction: column; align-items: flex-start; height: auto; gap: 4px;">
+                                <div class="label-wrapper">
+                                    <label>暴落が起きる期間（年目）</label>
+                                    <div class="help-icon">？<span class="tooltip">一時的な「大暴落」が発生すると仮定する期間を年目で指定します。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper" style="justify-content: flex-start; width: 100%;">
+                                    <button class="step-btn minus" onclick="step('eventStartYear', -1)">-1</button>
+                                    <input type="number" id="eventStartYear" class="num-year" value="20" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('eventStartYear', 1)">+1</button>
+                                    <span class="unit-text" style="line-height:48px; padding:0 4px;">〜</span>
+                                    <button class="step-btn minus" onclick="step('eventEndYear', -1)">-1</button>
+                                    <input type="number" id="eventEndYear" class="num-year" value="21" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('eventEndYear', 1)">+1</button>
+                                    <span class="unit-text" style="line-height:30px; padding-left:4px; white-space: nowrap; font-size: 10px;">年目</span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-wrapper">
+                                    <label>その期間中の大暴落年利 (%)</label>
+                                    <div class="help-icon">？<span class="tooltip">暴落期間中の年間利回りです。マイナス値を指定することで資産の一時的な目減りをシミュレートし、耐性を確認できます。</span></div>
+                                </div>
+                                <div class="ctrl-wrapper">
+                                    <button class="step-btn minus big" onclick="step('eventYieldRate', -10)">-10</button>
+                                    <button class="step-btn minus" onclick="step('eventYieldRate', -1)">-1</button>
+                                    <input type="number" id="eventYieldRate" class="num-amt" value="-30" oninput="updateChart()">
+                                    <button class="step-btn plus" onclick="step('eventYieldRate', 1)">+1</button>
+                                    <button class="step-btn plus big" onclick="step('eventYieldRate', 10)">+10</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+            <div class="notice">※純資産総額は「現金預金 ＋ 投資残高」の合計であり、住宅ローンの残債額は引き算していません。</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
