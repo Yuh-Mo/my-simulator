@@ -210,47 +210,52 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
         gap: 6px !important;
     }
     
-/* ==========================================================================
-       sp-unwrap-group が指定された入力枠（期間指定など）のスマホ表示強制上書き
+    /* ==========================================================================
+       sp-unwrap-group が指定された箇所の中身をスマホで完全に横幅100%にする
        ========================================================================== */
     
-    /* 既存の .input-group のがちがちなカード型スタイルを初期化し、縦積み専用に変える */
+    /* 1. 親の枠自体の横幅を100%にし、余計な制限を解除する */
     div.panel .input-group.sp-unwrap-group {
         display: flex !important;
-        flex-direction: column !important; /* ラベルと入力欄を縦に並べる */
+        flex-direction: column !important;
         align-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
         height: auto !important;
         min-height: auto !important;
-        gap: 6px !important;
+        box-sizing: border-box !important;
     }
 
-    /* ラベル部分の幅制限を解除して100%に広げる */
+    /* 2. ラベルの横幅制限（44%）を解除して100%に広げる */
     div.panel .input-group.sp-unwrap-group .label-wrapper {
         width: 100% !important;
-        flex-shrink: 0 !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
+        max-width: 100% !important;
+        flex-basis: auto !important;
     }
 
-    /* 調整ボタンや数値入力の塊（ctrl-wrapper や event-sub-ctrl）を完全に横幅いっぱいに広げる */
+    /* 3. ボタンと数値の塊（56%制限・右寄せ）を解除し、強制的に100%幅で下に落とす */
     div.panel .input-group.sp-unwrap-group .ctrl-wrapper,
     div.panel .input-group.sp-unwrap-group .event-sub-ctrl {
         width: 100% !important;
-        max-width: none !important;
-        display: flex !important;
-        flex-direction: row !important; /* ボタンと数値枠の「横並び自体」はキープ */
-        justify-content: space-between !important;
-        gap: 4px !important;
+        max-width: 100% !important;
+        flex-basis: auto !important;
+        justify-content: space-between !important; /* ボタンと数値を左右いっぱいに均等配置 */
+        margin-top: 4px !important;                 /* ラベルとの間に少し隙間を作る */
     }
 
-    /* 期間指定フォーム内のボタンと入力欄の横幅をすべて均等に引き伸ばして潰れを防ぐ */
-    div.panel .input-group.sp-unwrap-group .event-sub-ctrl .step-btn,
+    /* 4. 2桁・4桁の数値入力欄（46pxや36px固定）の幅制限を解除し、スマホで押しやすい幅に広げる */
+    div.panel .input-group.sp-unwrap-group .ctrl-wrapper input[type="number"].num-amt,
+    div.panel .input-group.sp-unwrap-group .ctrl-wrapper input[type="number"].num-year,
     div.panel .input-group.sp-unwrap-group .event-sub-ctrl input[type="number"] {
-        flex: 1 !important;
-        width: 100% !important;
-        height: 42px !important;
-        box-sizing: border-box !important;
+        width: 20% !important;  /* 固定ピクセルではなく％で広げる */
+        height: 48px !important; /* スマホでタップしやすい高さ */
+        flex-grow: 1 !important;
+    }
+
+    /* 5. 調整ボタン（-10, -1, +1, +10）も横幅いっぱいに引き伸ばす */
+    div.panel .input-group.sp-unwrap-group .step-btn {
+        height: 48px !important;
+        flex-grow: 1 !important;
     }
 }
 
