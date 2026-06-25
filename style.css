@@ -210,13 +210,23 @@ h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
         gap: 6px !important;
     }
     
-    /* HTML側で sp-unwrap-group を指定した箇所の枠線をスマホ時のみ非表示にし、中身を縦並び化 */
+/* HTML側で sp-unwrap-group を指定した箇所をスマホ時のみ枠線解除＋縦並び（2行・3行化）にする */
     .sp-unwrap-group {
         border: none !important;
         background: transparent !important;
         padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important; /* 横並びから縦並びに変更 */
+        height: auto !important;          /* 高さが潰れるのを防ぐ */
+        gap: 6px !important;
     }
-
+    /* その中にある入力欄やボタンの塊の横幅を100%いっぱいに広げる */
+    .sp-unwrap-group .ctrl-wrapper,
+    .sp-unwrap-group .event-sub-ctrl {
+        width: 100% !important;
+        max-width: none !important;
+        flex-direction: row !important;  /* ボタンと入力欄自体の横並びは維持 */
+    }
     /* 今回追加した sp-unwrap-group を指定した枠（input-group）をスマホで縦並びにする */
     div.panel div.input-group.sp-unwrap-group {
         display: flex !important;
